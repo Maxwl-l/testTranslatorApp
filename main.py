@@ -2,6 +2,7 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QTextEdit, QComboBox, QPushButton, QLabel, QHBoxLayout, QVBoxLayout
 from googletrans import Translator
 from languages import *
+from PyQt5.QtGui import QFont
 
 #Class
 class Home(QWidget):
@@ -10,6 +11,7 @@ class Home(QWidget):
         super().__init__()
         self.initUI()
         self.settings()
+        self.button_click()
 
 
     # Objects and UI Layout
@@ -27,6 +29,7 @@ class Home(QWidget):
 
 
         self.title = QLabel("PyLate")
+        self.title.setFont(QFont("Arial", 20, QFont.Bold))
 
         self.master = QHBoxLayout()
 
@@ -50,16 +53,35 @@ class Home(QWidget):
 
         self.setLayout(self.master)
 
+        self.setStyleSheet("""
+            QWidget { 
+                background-color: #42d4f5;
+                color: white;
+            }
+
+            QPushButton {
+                background-color: lightblue;
+                color: black;
+            }
+
+            QPushButton:hover {
+                background-color: lightgreen;
+            }
+        """)
+
 
     def settings(self):
         self.setWindowTitle("PyLate")
 
         #takes x,y,width,height of the window and sets it to the window
-        self.setGeometry(250,250,800,400)
+        self.setGeometry(250,250,600,500)
 
 
     def button_click(self):
-        pass
+        # Connects the buttons to their respective functions
+        self.submit.clicked.connect(self.translate_click)
+        self.reverse.clicked.connect(self.reverse_click)
+        self.reset.clicked.connect(self.reset_app)
 
 
     def translate_click(self):
@@ -67,11 +89,16 @@ class Home(QWidget):
         value_to_key2 = self.input_option.currentText()
 
         # Gets the key from the value in the dictionary
-        key_to_value1 = [key for key, value in LANGUAGES.items() if value == value_to_key1][0]
+        key_to_value1 = [key for key, value in LANGUAGES.items() if value == value_to_key1]
+        key_to_value2 = [key for key, value in LANGUAGES.items() if value == value_to_key2]
 
+        # Translates the text in the input box to the output box using the translate_text function
+        self.script = self.translate_text(self.input_box.toPlainText(), key_to_value1[0], key_to_value2[0])
+        self.output_box.setText(self.script)
 
     def reset_app(self):
-        pass
+        self.input_box.clear()
+        self.output_box.clear()
 
 
     # Uses googletrans library to translate the text from the input box to the output box
@@ -84,8 +111,16 @@ class Home(QWidget):
         return translation.text
 
 
-    def reverse(self):
-        pass
+    def reverse_click(self):
+        # Reverses the text in the input and output boxes and swaps the selected languages in the combo boxes
+        s1,l1 = self.input_box.toPlainText(), self.input_option.currentText()
+        s2,l2 = self.output_box.toPlainText(), self.output_option.currentText()
+
+        self.input_box.setText(s2)
+        self.output_box.setText(s1)
+
+        self.input_option.setCurrentText(l2)
+        self.output_option.setCurrentText(l1)
 
 
 
@@ -93,5 +128,6 @@ class Home(QWidget):
 if __name__ == "__main__":
     app = QApplication([])
     main = Home()
+    main.button_click()
     main.show()
     app.exec_()
